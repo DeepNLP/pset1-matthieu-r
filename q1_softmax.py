@@ -20,30 +20,20 @@ def softmax(x):
     written assignment!
     """
 
-    ### YOUR CODE HERE
-    # clean implementation of Thomas W
-    # take care of one dimensional inputs
-    one_dimensional_input = False
-
-    if len(x.shape) == 1:
-        one_dimensional_input = True
-        x = x.reshape(1, x.shape[0])
+    #using the transpose function is much easier for oneline vector and python
+    x = np.transpose(x)
 
     #normalize
-    x_max = np.transpose(np.amax(x, axis=1).reshape(1, x.shape[0]))
+    x_max = np.amax(x, axis=0)
     x = x - x_max
 
     x = np.exp(x)
-    sum_x = np.sum(x, axis=1)
+    sum_x = np.sum(x, axis=0)
 
     #sum all vectors
     x = x / sum_x
 
-    # restore one dimensional inputs
-    if one_dimensional_input:
-        x = x.flatten() 
-
-    return x
+    return np.transpose(x)
 
 def test_softmax_basic():
     """
