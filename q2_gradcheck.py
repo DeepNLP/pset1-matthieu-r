@@ -18,14 +18,23 @@ def gradcheck_naive(f, x):
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
     while not it.finished:
         ix = it.multi_index
-
+        
         ### try modifying x[ix] with h defined above to compute numerical gradients
         ### make sure you call random.setstate(rndstate) before calling f(x) each time, this will make it 
         ### possible to test cost functions with built in randomness later
         ### YOUR CODE HERE:
-        raise NotImplementedError
-        ### END YOUR CODE
+        epsilon = np.zeros(x.shape)
+        epsilon[ix] = h
 
+        random.setstate(rndstate)
+        f_m, grad_m = f(x - epsilon)
+
+        random.setstate(rndstate)
+        f_p, grad_p = f(x + epsilon)
+
+        numgrad = (f_p - f_m) / (2 * h)
+
+        ### END YOUR CODE
         # Compare gradients
         reldiff = abs(numgrad - grad[ix]) / max(1, abs(numgrad), abs(grad[ix]))
         if reldiff > 1e-5:
@@ -35,7 +44,6 @@ def gradcheck_naive(f, x):
             return
     
         it.iternext() # Step to next dimension
-
     print "Gradient check passed!"
 
 def sanity_check():

@@ -16,6 +16,7 @@ def forward_backward_prop(data, labels, params, dimensions):
     ### Unpack network parameters (do not modify)
     ofs = 0
     Dx, H, Dy = (dimensions[0], dimensions[1], dimensions[2])
+    N = labels.shape[0]
 
     W1 = np.reshape(params[ofs:ofs+ Dx * H], (Dx, H))
     ofs += Dx * H
@@ -26,17 +27,35 @@ def forward_backward_prop(data, labels, params, dimensions):
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
     ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
+    x = data
+    a1 = x
+    z1 = x
+    z2 = np.dot(a1,W1) + b1
+    a2 = sigmoid(z2)
+    z3 = np.dot(a2, W2) + b2
+
+    a3 = softmax(z3) #normalized for probabilty
+    #loss function would be here ? https://en.wikipedia.org/wiki/Cross_entropy or lecture 6
+    cost = - np.sum(np.log(np.sum(labels * a3, axis=1))) / N #this labels * a3 multiplication only keeps the non 0 vector, we use the softmax function here
+
     ### END YOUR CODE
     
     ### YOUR CODE HERE: backward propagation
-    raise NotImplementedError
+    error = (a3 - labels) / N
+    
+    gradW2 = np.dot(np.transpose(a2), error)
+    gradb2 = np.sum(error, axis=0)
+
+    delta2 = sigmoid_grad(a2) * np.dot(error, np.transpose(W2))
+    gradW1 = np.dot( np.transpose(x), delta2)
+    gradb1 = np.sum(delta2, axis=0)
+
     ### END YOUR CODE
     
     ### Stack gradients (do not modify)
     grad = np.concatenate((gradW1.flatten(), gradb1.flatten(), 
         gradW2.flatten(), gradb2.flatten()))
-    
+        
     return cost, grad
 
 def sanity_check():
@@ -46,12 +65,12 @@ def sanity_check():
     """
     print "Running sanity check..."
 
-    N = 20
+    N = 20 #number of window to classify
     dimensions = [10, 5, 10]
     data = np.random.randn(N, dimensions[0])   # each row will be a datum
     labels = np.zeros((N, dimensions[2]))
     for i in xrange(N):
-        labels[i,random.randint(0,dimensions[2]-1)] = 1
+        labels[i,random.randint(0,dimensions[2]-1)] = 1 # give probability 1 to each row, give a 100% label to each row
     
     params = np.random.randn((dimensions[0] + 1) * dimensions[1] + (
         dimensions[1] + 1) * dimensions[2], )
